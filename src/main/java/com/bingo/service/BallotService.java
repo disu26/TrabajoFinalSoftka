@@ -22,6 +22,12 @@ public class BallotService implements IBallotService{
     }
 
     @Override
+    @Transactional
+    public Ballot save(Ballot ballot){
+        return ballotDao.save(ballot);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Ballot> findBallot(Ballot ballot) {
         return ballotDao.findById(ballot.getId());

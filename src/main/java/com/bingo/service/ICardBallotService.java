@@ -13,5 +13,5 @@ public interface ICardBallotService {
 
     public void delete(CardBallot cardBallot);
 
-    public Optional<CardBallot> findContact(CardBallot cardBallot);
+    public Optional<CardBallot> findCardBallot(CardBallot cardBallot);
 }

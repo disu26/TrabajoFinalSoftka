@@ -3,11 +3,13 @@ package com.bingo.service;
 import com.bingo.dao.UserDao;
 import com.bingo.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class UserService implements IUserService{
 
     @Autowired
@@ -21,31 +23,21 @@ public class UserService implements IUserService{
 
     @Override
     @Transactional
-    public User save(String id, User user) {
-        user.setId(id);
+    public User save(User user) {
         return userDao.save(user);
     }
 
     @Override
     @Transactional
-    public User update(String id, User user) {
+    public User update(Long id, User user) {
         user.setId(id);
         return userDao.save(user);
     }
 
-    @Transactional
-    public void updateGameId(String id, User user) {
-        userDao.updateGameId(id, user.getGameId());
-    }
 
     @Transactional
-    public void updateCardId(String id, User user) {
-        userDao.updateCardId(id, user.getCardId());
-    }
-
-    @Transactional
-    public void updateWinner(String id, User user) {
-        userDao.updateWinner(id, user.isWinner());
+    public void updateWinner(Long id) {
+        userDao.updateWinner(id, true);
     }
 
     @Override
@@ -56,7 +48,7 @@ public class UserService implements IUserService{
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<User> findContact(User user) {
-        return userDao.findById(user.getId());
+    public Optional<User> findUser(String mongoId) {
+        return userDao.findById(mongoId);
     }
 }

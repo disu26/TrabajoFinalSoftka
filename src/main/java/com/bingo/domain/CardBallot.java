@@ -14,12 +14,16 @@ public class CardBallot implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "car_bal_id")
+    private Long cardBallotId;
+
     @Column(name = "card_car_id")
     private Long cardId;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ballot_bal_id")
     private Long balId;
+
+    @Column(name = "card_bal_marked")
+    private boolean marked;
 
 }

@@ -34,8 +34,8 @@ public class CardBallotService implements ICardBallotService{
     }
 
     @Override
-    @Transactional
-    public Optional<CardBallot> findContact(CardBallot cardBallot) {
-        return cardBallotDao.findById(cardBallot.getCardId());
+    @Transactional(readOnly = true)
+    public Optional<CardBallot> findCardBallot(CardBallot cardBallot) {
+        return cardBallotDao.findById(cardBallot.getCardBallotId());
     }
 }

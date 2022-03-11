@@ -24,12 +24,10 @@ public class Ballot implements Serializable{
     @Column(name = "bal_letter")
     private String letter;
 
-    @Column(name = "bal_letter")
+    @Column(name = "bal_number")
     private String number;
 
     @Column(name = "bal_out")
     private boolean out;
 
-    @Column(name = "bal_marked")
-    private boolean marked;
 }

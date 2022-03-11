@@ -15,5 +15,5 @@ public interface ICardService {
 
     public void delete(Card card);
 
-    public Optional<Card> findContact(Card card);
+    public Optional<Card> findCard(Card card);
 }

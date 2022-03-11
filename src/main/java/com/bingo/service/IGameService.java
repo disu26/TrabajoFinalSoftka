@@ -15,5 +15,5 @@ public interface IGameService {
 
     public void delete(Game game);
 
-    public Optional<Game> findContact(Game game);
+    public Optional<Game> findGame(Game game);
 }

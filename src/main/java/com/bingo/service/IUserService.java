@@ -9,11 +9,11 @@ public interface IUserService {
 
     public List<User> list();
 
-    public User save(String id, User user);
+    public User save(User user);
 
-    public User update(String id, User user);
+    public User update(Long id, User user);
 
     public void delete(User user);
 
-    public Optional<User> findContact(User user);
+    public Optional<User> findUser(String mongoId);
 }

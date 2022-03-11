@@ -14,4 +14,7 @@ public interface CardDao extends CrudRepository<Card, Long> {
             @Param(value = "id") Long id,
             @Param(value = "winner") boolean winner
     );
+
+
+
 }

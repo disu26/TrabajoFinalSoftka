@@ -47,7 +47,7 @@ public class CardService implements ICardService{
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Card> findContact(Card card) {
+    public Optional<Card> findCard(Card card) {
         return cardDao.findById(card.getId());
     }
 }

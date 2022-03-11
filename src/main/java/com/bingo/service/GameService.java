@@ -42,7 +42,7 @@ public class GameService implements IGameService{
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Game> findContact(Game game) {
+    public Optional<Game> findGame(Game game) {
         return gameDao.findById(game.getId());
     }
 }
