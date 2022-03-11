@@ -1,0 +1,57 @@
+/*Generales*/
+*{
+  margin: 0px;
+  padding: 0px;
+}
+body{
+  font-family: "Courier New",Arial, Helvetica, sans-serif;
+  font-size: 17px;
+  background-attachment: fixed;
+}
+.clearfix{
+  float: none;
+  clear: both;
+}
+
+/*Contenido Principal*/
+#content{
+  min-height: 1100px;
+  width: 100%;
+  margin:0px auto;
+  box-shadow: 0px 0px  40px black;
+  background: white;
+  padding-top: 120px;
+  padding-bottom: 18%;
+}
+
+#tabla {
+  text-align: center;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#tablaCont {
+  margin-right: 7%;
+}
+
+#tabla {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+#tabla td,
+#tabla th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#tabla tr:hover {
+  background-color: #ddd;
+}
+
+#tabla th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background: lightgray;
+}

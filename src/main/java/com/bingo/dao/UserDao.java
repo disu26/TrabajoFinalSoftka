@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface UserDao extends CrudRepository<User, String> {
 
     @Modifying
@@ -13,5 +15,10 @@ public interface UserDao extends CrudRepository<User, String> {
     public void updateWinner(
             @Param(value = "id") Long id,
             @Param(value = "winner") boolean winner
+    );
+
+    @Query("select user from User user where user.mongoId = :mongoId")
+    public Optional<User> findByMongoId(
+            @Param(value = "mongoId") String mongoId
     );
 }

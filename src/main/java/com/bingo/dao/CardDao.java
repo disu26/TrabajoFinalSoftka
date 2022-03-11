@@ -16,5 +16,4 @@ public interface CardDao extends CrudRepository<Card, Long> {
     );
 
 
-
 }

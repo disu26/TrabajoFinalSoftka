@@ -2,10 +2,12 @@ package com.bingo.service;
 
 import com.bingo.dao.CardBallotDao;
 import com.bingo.domain.CardBallot;
+import com.bingo.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +39,11 @@ public class CardBallotService implements ICardBallotService{
     @Transactional(readOnly = true)
     public Optional<CardBallot> findCardBallot(CardBallot cardBallot) {
         return cardBallotDao.findById(cardBallot.getCardBallotId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Collection<CardBallot> findByCardId(User user) {
+        return cardBallotDao.findByCardId(user.getCardId());
     }
 }

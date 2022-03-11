@@ -1,0 +1,36 @@
+<table class="table table-striped table-bordered table-sm" id="tabla">
+
+  <tr >
+    <th *ngFor="let column of headers">
+      {{column}}
+    </th>
+  </tr>
+
+
+  <tr >
+    <td *ngFor="let i of tarjeta[0]" >
+      <a>{{i}}</a>
+    </td>
+  </tr>
+
+  <tr >
+    <td *ngFor="let i of tarjeta[1]" >{{i}}</td>
+  </tr>
+
+  <tr >
+    <td  *ngFor="let i of tarjeta[2]" >
+      <a *ngIf="i != '0' ">{{i}}</a>
+      <a *ngIf="i == '0' "><img src="../../../assets/img/d.png" alt="Dimar" width="30" height="40"></a>
+    </td>
+  </tr>
+  <tr >
+    <td *ngFor="let i of tarjeta[3]" >{{i}}</td>
+  </tr>
+  <tr >
+    <td *ngFor="let i of tarjeta[4]" >{{i}}</td>
+  </tr>
+
+
+
+
+</table>
