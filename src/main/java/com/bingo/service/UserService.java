@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,5 +50,10 @@ public class UserService implements IUserService{
     @Transactional(readOnly = true)
     public Optional<User> findUserByMongoId(User user) {
         return userDao.findByMongoId(user.getMongoId());
+    }
+
+    @Transactional(readOnly = true)
+    public Collection<User> findUserByGameId(Long gameID) {
+        return userDao.findByGameId(gameID);
     }
 }

@@ -20,4 +20,13 @@ public class Game implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "gam_id")
     private Long id;
+
+    @Column(name = "gam_inProgress")
+    private boolean inProgress;
+
+    @Column(name = "gam_started")
+    private boolean started;
+
+    @Column(name = "gam_finished")
+    private boolean finished;
 }

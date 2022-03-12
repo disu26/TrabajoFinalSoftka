@@ -61,6 +61,18 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping(path = "/players/{gameId}")
+    public ResponseEntity<Response> playersList(Game game){
+        List<User> players = new ArrayList<>();
+        var users = userService.findUserByGameId(game.getId());
+        for (Iterator<User> iterator = users.iterator(); iterator.hasNext();){
+            var item = iterator.next();
+            players.add(item);
+        }
+        response.data = players;
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping(path = "/game/{id}")
     public ResponseEntity<Response> createGame(@PathVariable("id") String mongoId){
         try {
@@ -195,6 +207,22 @@ public class Bingo {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/game/started/{gameId}")
+    public ResponseEntity<Response> started(Game game){
+        gameService.updateStarted(game.getId(), game , true);
+        gameService.updateInProgress(game.getId(), game, true);
+        response.data = game;
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/game/finished/{gameId}")
+    public ResponseEntity<Response> finished(Game game){
+        gameService.updateFinished(game.getId(), game , true);
+        gameService.updateInProgress(game.getId(), game, false);
+        response.data = game;
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     private void generateCard(Long cardId, int min){

@@ -34,6 +34,24 @@ public class GameService implements IGameService{
         return gameDao.save(game);
     }
 
+    @Transactional
+    public void updateInProgress(Long id, Game game, boolean status) {
+        game.setId(id);
+        gameDao.updateInProgress(game.getId(), status);
+    }
+
+    @Transactional
+    public void updateStarted(Long id, Game game, boolean status) {
+        game.setId(id);
+        gameDao.updateStarted(game.getId(), status);
+    }
+
+    @Transactional
+    public void updateFinished(Long id, Game game, boolean status) {
+        game.setId(id);
+        gameDao.updateFinished(game.getId(), status);
+    }
+
     @Override
     @Transactional
     public void delete(Game game) {

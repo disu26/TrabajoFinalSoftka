@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public interface UserDao extends CrudRepository<User, String> {
@@ -20,5 +21,10 @@ public interface UserDao extends CrudRepository<User, String> {
     @Query("select user from User user where user.mongoId = :mongoId")
     public Optional<User> findByMongoId(
             @Param(value = "mongoId") String mongoId
+    );
+
+    @Query("select user from User user where user.gameId = :gameId")
+    public Collection<User> findByGameId(
+            @Param(value = "gameId") Long gameId
     );
 }
