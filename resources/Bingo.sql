@@ -9,6 +9,10 @@ USE bingo ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS game (
   gam_id INT NOT NULL AUTO_INCREMENT,
+  gam_in_progress TINYINT(1) NULL,
+  gam_started TINYINT(1) NULL,
+  gam_finished TINYINT(1) NULL,
+  gam_start_timer DATETIME NULL,
   PRIMARY KEY (gam_id)
 ) ENGINE = InnoDB;
 
@@ -32,8 +36,9 @@ CREATE TABLE IF NOT EXISTS user (
   game_gam_id INT NOT NULL,
   card_car_id INT NOT NULL,
   use_winner TINYINT(1) NULL,
+  use_admin TINYINT(1) NULL,
   PRIMARY KEY (use_id),
-  UNIQUE INDEX use_mongo_id_UNIQUE (use_mongo_id ASC) VISIBLE,
+  UNIQUE INDEX use_game_mongoid_UNIQUE (use_mongo_id ASC, game_gam_id ASC) VISIBLE,
   INDEX fk_user_game1_idx (game_gam_id ASC) VISIBLE,
   INDEX fk_user_card1_idx (card_car_id ASC) VISIBLE,
   CONSTRAINT fk_user_game1
