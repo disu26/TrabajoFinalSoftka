@@ -29,6 +29,11 @@ public class CardBallotService implements ICardBallotService{
         return cardBallotDao.save(cardBallot);
     }
 
+    @Transactional
+    public void updateMarked(CardBallot cardBallot) {
+        cardBallotDao.updateMarked(cardBallot.getCardBallotId(), true);
+    }
+
     @Override
     @Transactional
     public void delete(CardBallot cardBallot) {
@@ -45,5 +50,10 @@ public class CardBallotService implements ICardBallotService{
     @Transactional(readOnly = true)
     public Collection<CardBallot> findByCardId(User user) {
         return cardBallotDao.findByCardId(user.getCardId());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CardBallot> findByCardAndBallotId(Long cardId, Long ballotId) {
+        return cardBallotDao.findByCardAndBallotId(cardId, ballotId);
     }
 }

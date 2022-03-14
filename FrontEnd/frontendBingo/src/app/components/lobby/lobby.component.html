@@ -1,4 +1,19 @@
-<table class="table table-striped table-bordered table-sm" id="tabla">
+
+<h1 class="display-4">Esperando a que mas jugadores se unan al lobby...</h1>
+<div class="content" [class.move]="animate">
+  <div class="content-timer">
+
+    <div class="content-m">
+      <div class="time">{{ minutes | number:'2.0'}} <span>m</span></div>
+    </div>
+    <div class="content-s">
+      <div class="time">{{seconds | number:'2.0'}} <span>s</span></div>
+    </div>
+  </div>
+
+</div>
+<br>
+<table *ngIf="tarjeta[0] != 0" class="table table-striped table-bordered table-sm" id="tabla">
 
   <tr >
     <th *ngFor="let column of headers">
@@ -30,7 +45,27 @@
     <td *ngFor="let i of tarjeta[4]" >{{i}}</td>
   </tr>
 
+</table>
+
+<br>
 
 
+<br>
+
+<h3>Usuarios en el lobby</h3>
+<table *ngIf="listaUsuarios[0]!= '' " class="table table-striped table-bordered table-sm" id="tabla">
+  <tr >
+    <th *ngFor="let column of headers2">
+      {{column}}
+    </th>
+  </tr>
+
+  <tr *ngFor="let user of listaUsuarios">
+    <td>{{user.id}}</td>
+    <td>Perras</td>
+  </tr>
 
 </table>
+
+
+

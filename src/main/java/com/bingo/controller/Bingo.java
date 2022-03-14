@@ -17,6 +17,9 @@ import java.util.regex.Pattern;
 @CrossOrigin(origins = "*", methods= {RequestMethod.GET,RequestMethod.POST,RequestMethod.DELETE,RequestMethod.PUT,RequestMethod.PATCH})
 public class Bingo {
 
+    /**
+     * Variables para utilizar los servicios de las diferentes tablas.
+     */
     @Autowired
     private UserService userService;
 
@@ -32,8 +35,17 @@ public class Bingo {
     @Autowired
     private CardBallotService cardBallotService;
 
-    private Response response = new Response();
+    /**
+     * Variable de tipo Response, utilizada para retornar errores e información.
+     */
+    private Response response;
 
+    /**
+     * Método para retorar el valor de la tarjeta de un usuario en forma de matriz,
+     * esta matriz es utilizada para mostrarla en el FrontEnd.
+     * @param user
+     * @return un objeto de tipo Response, que en su campo response.data lleva la matriz de la tarjeta
+     */
     @GetMapping(path = "/card/{mongoId}")
     public ResponseEntity<Response> cardValue(User user){
         var usu = userService.findUserByMongoId(user);
@@ -48,7 +60,6 @@ public class Bingo {
                         }
                         var item = iterator.next();
                         value[j][i] = Math.toIntExact(item.getBalId());
-                        log.info(item.getBalId().toString());
                     }
                 }
             }
@@ -61,93 +72,323 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/players/{gameId}")
-    public ResponseEntity<Response> playersList(Game game){
-        List<User> players = new ArrayList<>();
-        var users = userService.findUserByGameId(game.getId());
-        for (Iterator<User> iterator = users.iterator(); iterator.hasNext();){
-            var item = iterator.next();
-            players.add(item);
+    /**
+     * Método que retorna la lista de jugadores en una partida como un objeto,
+     * para mostrarlo posteriormente en el FrontEnd.
+     * @return un objeto de tipo Response, que en su campo response.data contiene un objeto de tipo User.
+     */
+    @GetMapping(path = "/players")
+    public ResponseEntity<Response> playersList(){
+        response = new Response();
+        try {
+            List<User> players = new ArrayList<>();
+            var gameStarted = gameService.findGameStarted();
+            if (gameStarted.isPresent()) {
+                var game = gameStarted.get();
+                var users = userService.findUserByGameId(game.getId());
+                for (Iterator<User> iterator = users.iterator(); iterator.hasNext(); ) {
+                    var item = iterator.next();
+                    players.add(item);
+                }
+                response.data = players;
+            } else {
+                throw new Exception("Juego no encontrado");
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch (Exception exc){
+            response.message = exc.getMessage();
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
-        response.data = players;
+    }
+
+    @GetMapping(path = "/game/started")
+    public ResponseEntity<Response> started(){
+        response = new Response();
+        var gameStarted = gameService.findGameStarted();
+        if (gameStarted.isPresent()){
+            response.data = true;
+        }else {
+            response.message = "No hay ningún juego iniciado";
+            response.data = false;
+        }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping(path = "/game/{id}")
-    public ResponseEntity<Response> createGame(@PathVariable("id") String mongoId){
+    @GetMapping(path = "/game/inProgress")
+    public ResponseEntity<Response> inProgress(){
+        response = new Response();
+        var gameInProgress = gameService.findGameInProgress();
+        if (gameInProgress.isPresent()){
+            response.data = true;
+        }else {
+            response.message = "No hay ningún juego en progreso";
+            response.data = false;
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "game/startTime")
+    public ResponseEntity<Response> startTime(){
+        response = new Response();
+        var gameStarted = gameService.findGameStarted();
+        if (gameStarted.isPresent()){
+            var game = gameStarted.get();
+            response.data = game.getStart_timer();
+        }else {
+            response.message = "No hay ningún juego iniciado";
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "game/userAdmin/{mongoId}")
+    public ResponseEntity<Response> userAdmin(User user){
+        response = new Response();
+        var us = userService.findUserByMongoId(user);
+        if(us.isPresent()){
+            var admin =  us.get();
+            if(admin.isAdmin()){
+                response.data = "true";
+            }else {
+                response.data = "false";
+            }
+
+        }else {
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "game/ballotsOut")
+    public ResponseEntity<Response> ballotsOut(){
+        response = new Response();
+        List ballotsOut = ballotService.outList();
+        response.data = ballotsOut;
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "game/isWinner/{mongoId}")
+    public ResponseEntity<Response> isWinner(User user){
+        response = new Response();
+        var us = userService.findUserByMongoId(user);
+        if(us.isPresent()){
+            int [] cardWinner = new int[24];
+            var probWinner = us.get();
+            boolean winner = false;
+            Collection<CardBallot> cW = cardBallotService.findByCardId(probWinner);
+            for (Iterator<CardBallot> iterator = cW.iterator(); iterator.hasNext(); ) {
+                for (int i=0 ; i < 24; i++){
+                    var item = iterator.next();
+                    /**
+                     * Se llena un vector de 23 posiciones, en el que se pondra un 1 si esa balota está marcada,
+                     * este vector después se valida teniendo en cuanta que las balotas se almacenan de a 5 por letra
+                     * y 4 en la letra N.
+                     */
+                    if(item.isMarked()){
+                        cardWinner[i] = 1;
+                    }else {
+                        cardWinner[i] = 0;
+                    }
+                }
+            }
+
+            /**
+             * Verificación si el usuario ganó o no.
+             */
+            if(cardWinner[0] == 1 && cardWinner[6] == 1 && cardWinner[17] == 1 && cardWinner[23] == 1){
+                winner = true;
+            }else if (cardWinner[4] == 1 && cardWinner[8] == 1 && cardWinner[15] == 1 && cardWinner[19] == 1){
+                winner = true;
+            }else  if(cardWinner[0] == 1 && cardWinner[1] == 1 && cardWinner[2] == 1 && cardWinner[3] == 1 && cardWinner[4] == 1){
+                winner = true;
+            }else if(cardWinner[5] == 1 && cardWinner[6] == 1 && cardWinner[7] == 1 && cardWinner[8] == 1 && cardWinner[9] == 1){
+                winner = true;
+            }else if(cardWinner[10] == 1 && cardWinner[11] == 1 && cardWinner[12] == 1 && cardWinner[13] == 1 ){
+                winner = true;
+            }else if(cardWinner[14] == 1 && cardWinner[15] == 1 && cardWinner[16] == 1 && cardWinner[17] == 1 && cardWinner[18] == 1){
+                winner = true;
+            }else if(cardWinner[19] == 1 && cardWinner[20] == 1 && cardWinner[21] == 1 && cardWinner[22] == 1 && cardWinner[23] == 1){
+                winner = true;
+            }else if(cardWinner[0] == 1 && cardWinner[5] == 1 && cardWinner[10] == 1 && cardWinner[14] == 1 && cardWinner[19] == 1){
+                winner = true;
+            }else if(cardWinner[1] == 1 && cardWinner[6] == 1 && cardWinner[11] == 1 && cardWinner[15] == 1 && cardWinner[20] == 1){
+                winner = true;
+            }else if(cardWinner[2] == 1 && cardWinner[7] == 1 && cardWinner[12] == 1 && cardWinner[16] == 1 && cardWinner[21] == 1){
+                winner = true;
+            }else if(cardWinner[3] == 1 && cardWinner[8] == 1 && cardWinner[13] == 1 && cardWinner[17] == 1 && cardWinner[22] == 1){
+                winner = true;
+            }else if(cardWinner[4] == 1 && cardWinner[9] == 1 && cardWinner[14] == 1 && cardWinner[18] == 1 && cardWinner[23] == 1){
+                winner = true;
+            }
+            if(winner){
+                userService.updateWinner(probWinner);
+                response.data = true;
+                response.message = "El usuario ganó";
+            }else {
+                response.data = false;
+                response.message = "El usuario no ganó";
+            }
+        }else {
+            response.message = "Usuario no encontrado";
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * Cuando ingresa la primera persona, se crea un juego y se le asigna la tarjeta a esta persona.
+     * @param mongoId
+     * @return Objeto de tipo response que muestra una cosa u otra dependiendo de si la creación es exitosa o no.
+     */
+    @PostMapping(path = "/game/{mongoId}")
+    public ResponseEntity<Response> createGame(@RequestBody @PathVariable("mongoId") String mongoId){
+        response = new Response();
         try {
-            Game game = new Game();
-            gameService.save(game);
-            response.data = game;
-            Card card = new Card();
-            cardService.save(card);
+            var gameStarted = gameStarted();
+            if(gameStarted.getBody().data.equals(false)) {
+                Card card = new Card();
+                cardService.save(card);
+                /**
+                 * El usuario que crea el juego es asignado como admin y este tendrá la labor de
+                 * generar las balotas.
+                 */
+                User user = new User();
+                user.setAdmin(true);
+                user.setMongoId(mongoId);
+                var firstGame = gameService.findAnyGame();
 
-            User user = new User();
-            user.setMongoId(mongoId);
-            /**
-             * Creación de las diferentes balotas, cada vez que se cree una nueva partida estos
-             * deben volver a ser inicializados, ya que se tienen atributos como si la balota ya salió
-             * que son únicos de cada partida
-             */
-            for (int i = 1; i <= 15; i++) {
-                Ballot ballot = new Ballot();
-                ballot.setLetter("B");
-                ballot.setNumber(String.valueOf(i));
-                ballotService.save(ballot);
+                if(!firstGame.isPresent()) {
+                    /**
+                     * Creación de las diferentes balotas si es la primera vez que se ejecuta la aplicación.
+                     */
+                    for (int i = 1; i <= 15; i++) {
+                        Ballot ballot = new Ballot();
+                        ballot.setLetter("B");
+                        ballot.setNumber(String.valueOf(i));
+                        ballotService.save(ballot);
+                    }
+
+                    for (int i = 16; i <= 30; i++) {
+                        Ballot ballot = new Ballot();
+                        ballot.setLetter("I");
+                        ballot.setNumber(String.valueOf(i));
+                        ballotService.save(ballot);
+                    }
+
+                    for (int i = 31; i <= 45; i++) {
+                        Ballot ballot = new Ballot();
+                        ballot.setLetter("N");
+                        ballot.setNumber(String.valueOf(i));
+                        ballotService.save(ballot);
+                    }
+
+                    for (int i = 46; i <= 60; i++) {
+                        Ballot ballot = new Ballot();
+                        ballot.setLetter("G");
+                        ballot.setNumber(String.valueOf(i));
+                        ballotService.save(ballot);
+                    }
+
+                    for (int i = 61; i <= 75; i++) {
+                        Ballot ballot = new Ballot();
+                        ballot.setLetter("O");
+                        ballot.setNumber(String.valueOf(i));
+                        ballotService.save(ballot);
+                    }
+                }
+
+                /**
+                 * Después de generar las balotas, se crea el primer juego.
+                 */
+                Game game = new Game();
+                Date startTime = new Date();
+                gameService.save(game);
+                gameService.updateStarted(game.getId(), game, true);
+                gameService.updateStartTime(game.getId(), game, startTime);
+                response.data = game;
+
+                /**
+                 * Asignacion de las balotas a las diferentes tarjetas,
+                 * esto se realiza apoyandonos en el hecho de que los ids de las
+                 * balotas están en orden del 1 al 75, lo que quiere decir que del 1 al 15
+                 * tendremos la letra B, del 16 al 30 la letra I y así sucesivamente.
+                 */
+                generateCard(card.getId(), 1);
+
+                generateCard(card.getId(), 15);
+
+                generateCard(card.getId(), 30);
+
+                generateCard(card.getId(), 45);
+
+                generateCard(card.getId(), 60);
+
+                user.setGameId(game.getId());
+                user.setCardId(card.getId());
+                userService.save(user);
+
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }else{
+                throw new Exception("Ya hay una partida creada");
             }
-
-            for (int i = 16; i <= 30; i++) {
-                Ballot ballot = new Ballot();
-                ballot.setLetter("I");
-                ballot.setNumber(String.valueOf(i));
-                ballotService.save(ballot);
-            }
-
-            for (int i = 31; i <= 45; i++) {
-                Ballot ballot = new Ballot();
-                ballot.setLetter("N");
-                ballot.setNumber(String.valueOf(i));
-                ballotService.save(ballot);
-            }
-
-            for (int i = 46; i <= 60; i++) {
-                Ballot ballot = new Ballot();
-                ballot.setLetter("G");
-                ballot.setNumber(String.valueOf(i));
-                ballotService.save(ballot);
-            }
-
-            for (int i = 61; i <= 75; i++) {
-                Ballot ballot = new Ballot();
-                ballot.setLetter("O");
-                ballot.setNumber(String.valueOf(i));
-                ballotService.save(ballot);
-            }
-
-            /**
-             * Asignacion de las balotas a las diferentes tarjetas,
-             * esto se realiza apoyandonos en el hecho de que los ids de las
-             * balotas están en orden del 1 al 75, lo que quiere decir que del 1 al 15
-             * tendremos la letra B, del 16 al 30 la letra I y así sucesivamente.
-             */
-            generateCard(card.getId(), 1);
-
-            generateCard(card.getId(), 15);
-
-            generateCard(card.getId(), 30);
-
-            generateCard(card.getId(), 45);
-
-            generateCard(card.getId(), 60);
-
-            user.setGameId(game.getId());
-            user.setCardId(card.getId());
-            userService.save(user);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
         }catch (Exception exc){
-            response.status = exc.getCause().toString();
+            response.status = "ERROR";
             response.error = true;
-            if (Pattern.compile("(user.use_mongo_id_UNIQUE)").matcher(exc.getMessage()).find()){
+            if (Pattern.compile("(user.use_game_mongoid_UNIQUE)").matcher(exc.getMessage()).find()){
+                response.message = "el usuario ya está en la partida";
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+            }else if(exc.getMessage().equals("Ya hay una partida creada")){
+                response.message = exc.getMessage();
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+            }else {
+                response.message = exc.getMessage();
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    /**
+     * Cuando ingresa una persona y ya hay una partida iniciada pero no en progreso,
+     * la persona que entre se añade a esta.
+     * @param mongoId
+     * @return
+     */
+    @PostMapping(path = "/game/addUser/{mongoId}")
+    public ResponseEntity<Response> addUser(@RequestBody @PathVariable("mongoId") String mongoId){
+        response = new Response();
+        try {
+            var gameInProgressBool = gameInProgress();
+            if(gameInProgressBool.getBody().data.equals(false)) {
+                var gameStarted = gameService.findGameStarted().get();
+                Card card = new Card();
+                cardService.save(card);
+
+                User user = new User();
+                user.setMongoId(mongoId);
+
+                generateCard(card.getId(), 1);
+
+                generateCard(card.getId(), 15);
+
+                generateCard(card.getId(), 30);
+
+                generateCard(card.getId(), 45);
+
+                generateCard(card.getId(), 60);
+
+                user.setGameId(gameStarted.getId());
+                user.setCardId(card.getId());
+                userService.save(user);
+
+                response.data = user;
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            }else {
+                throw new Exception("Ya hay una partida en progreso, intente de nuevo más tarde");
+            }
+        }catch (Exception exc){
+            response.status = "ERROR";
+            response.error = true;
+            if (Pattern.compile("(user.use_game_mongoid_UNIQUE)").matcher(exc.getMessage()).find()){
                 response.message = "el usuario ya está en la partida";
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
             }else {
@@ -157,45 +398,65 @@ public class Bingo {
         }
     }
 
-    @PostMapping(path = "/game/{gameId}/{id}")
-    public ResponseEntity<Response> addUser(@PathVariable("gameId") Long gameId, @PathVariable("id") String mongoId){
-        try {
-            Card card = new Card();
-            cardService.save(card);
+    @PutMapping(path = "ballot/out")
+    public ResponseEntity<Response> ballotOut(){
+        Random random = new Random();
+        int balOut = random.nextInt(74 + 1) + 1;
+        var bal = ballotService.findBallotById((long) balOut);
+        if (bal.isPresent()){
+            var ballot = bal.get();
+            if(ballot.isOut()){
+                ballot = posibleBallot(ballot);
+            }
+            ballotService.updateOut(ballot);
+            response.data = ballot;
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
-            User user = new User();
-            user.setMongoId(mongoId);
-
-            generateCard(card.getId(), 1);
-
-            generateCard(card.getId(), 15);
-
-            generateCard(card.getId(), 30);
-
-            generateCard(card.getId(), 45);
-
-            generateCard(card.getId(), 60);
-
-            user.setGameId(gameId);
-            user.setCardId(card.getId());
-            userService.save(user);
-            response.data = user;
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        }catch (Exception exc){
-            response.status = exc.getCause().toString();
-            response.error = true;
-            if (Pattern.compile("(user.use_mongo_id_UNIQUE)").matcher(exc.getMessage()).find()){
-                response.message = "el usuario ya está en la partida";
+    @PutMapping(path = "balcard/{mongoId}/{balId}")
+    public ResponseEntity<Response> balCardMarked(@RequestBody @PathVariable("mongoId") String mongoId,
+                                                  @RequestBody @PathVariable("balId") Long balId)
+    {
+        response = new Response();
+        var us = userService.findUserByMongoId(mongoId);
+        if(us.isPresent()) {
+            var userCard = us.get();
+            var cB = cardBallotService.findByCardAndBallotId(userCard.getCardId(), balId);
+            if (cB.isPresent()) {
+                var cardBallot = cB.get();
+                cardBallotService.updateMarked(cardBallot);
+                response.data = cardBallot;
+            } else {
+                response.message = "Esa balota no se encuentra en esa tarjeta";
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-            }else {
-                response.message = exc.getMessage();
-                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public Ballot posibleBallot(Ballot ballot){
+        Random random = new Random();
+        if(ballot.isOut()){
+            int balOut = random.nextInt(74 + 1) + 1;
+            var bal = ballotService.findBallotById((long) balOut);
+
+            if (bal.isPresent()){
+                var posibleBalot = bal.get();
+                if(!posibleBalot.isOut()){
+                    return posibleBalot;
+                }else {
+                    posibleBallot(posibleBalot);
+                }
+            }
+        }
+        return ballot;
     }
 
     @PutMapping(path = "/game/winner/{mongoId}")
     public ResponseEntity<Response> winner(User user){
+        response = new Response();
+        log.info(user.getMongoId());
         var usu = userService.findUserByMongoId(user);
         if (usu.isPresent()){
             var usuario = usu.get();
@@ -209,20 +470,62 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PutMapping(path = "/game/started/{gameId}")
-    public ResponseEntity<Response> started(Game game){
-        gameService.updateStarted(game.getId(), game , true);
-        gameService.updateInProgress(game.getId(), game, true);
-        response.data = game;
+    @PutMapping(path = "/game/upInProgress")
+    public ResponseEntity<Response> updateInProgress(){
+        var gameStarted = gameService.findGameStarted();
+        if(gameStarted.isPresent()){
+            var game = gameStarted.get();
+            gameService.updateInProgress(game.getId(),game, true);
+            response.message = "Actualizado Correctamente";
+        }else {
+            response.message = "No hay ningún juego iniciado";
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/game/finish")
+    public ResponseEntity<Response> finish(){
+        response = new Response();
+        var gameInProgress = gameService.findGameInProgress();
+        if(gameInProgress.isPresent()){
+            var game = gameInProgress.get();
+            gameService.updateFinished(game.getId(), game , true);
+            gameService.updateInProgress(game.getId(), game, false);
+            gameService.updateStarted(game.getId(), game, false);
+            ballotService.restartBallot();
+            response.data = game;
+        }else {
+            response.message = "No hay ningún juego en progreso";
+            return new ResponseEntity<>(response,HttpStatus.CONFLICT);
+        }
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PutMapping(path = "/game/finished/{gameId}")
-    public ResponseEntity<Response> finished(Game game){
-        gameService.updateFinished(game.getId(), game , true);
-        gameService.updateInProgress(game.getId(), game, false);
-        response.data = game;
-        return new ResponseEntity<>(response,HttpStatus.OK);
+    /**
+     * Metodo para verificar si existe o no una partida en progreso.
+     * @return Objeto response que en su campo response.data lleva un boolean diciendo
+     * que indica si hay o no una partida en progreso
+     */
+    public ResponseEntity<Response> gameInProgress(){
+        response = new Response();
+        var gameInProgress = gameService.findGameInProgress();
+        if (gameInProgress.isPresent()){
+            response.data = true;
+        }else {
+            response.data = false;
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<Response> gameStarted(){
+        response = new Response();
+        var gameStarted = gameService.findGameStarted();
+        if (gameStarted.isPresent()){
+            response.data = true;
+        }else {
+            response.data = false;
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     private void generateCard(Long cardId, int min){

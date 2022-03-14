@@ -33,4 +33,7 @@ public class User implements Serializable{
 
     @Column(name = "use_winner")
     private boolean winner;
+
+    @Column(name = "use_admin")
+    private boolean admin;
 }

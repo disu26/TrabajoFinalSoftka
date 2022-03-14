@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Column;
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @Entity
@@ -29,4 +30,7 @@ public class Game implements Serializable {
 
     @Column(name = "gam_finished")
     private boolean finished;
+
+    @Column(name = "gam_start_timer")
+    private Date start_timer;
 }

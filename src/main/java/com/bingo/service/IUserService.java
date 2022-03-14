@@ -15,5 +15,4 @@ public interface IUserService {
 
     public void delete(User user);
 
-    //public Optional<User> findUser(String mongoId);
 }

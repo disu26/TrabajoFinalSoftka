@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,6 +53,12 @@ public class GameService implements IGameService{
         gameDao.updateFinished(game.getId(), status);
     }
 
+    @Transactional
+    public void updateStartTime(Long id, Game game, Date startTime) {
+        game.setId(id);
+        gameDao.updateStartTime(game.getId(), startTime);
+    }
+
     @Override
     @Transactional
     public void delete(Game game) {
@@ -62,5 +69,20 @@ public class GameService implements IGameService{
     @Transactional(readOnly = true)
     public Optional<Game> findGame(Game game) {
         return gameDao.findById(game.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Game> findGameInProgress() {
+        return gameDao.findGamesInProgress(true);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Game> findAnyGame() {
+        return gameDao.findAnyGame(Long.valueOf(1));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Game> findGameStarted() {
+        return gameDao.findGameStarted(true);
     }
 }

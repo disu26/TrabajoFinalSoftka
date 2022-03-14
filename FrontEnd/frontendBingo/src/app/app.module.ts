@@ -6,11 +6,15 @@ import { routing, appRoutingProviders } from './app.routing';
 
 import { AppComponent } from './app.component';
 import { LobbyComponent } from './components/lobby/lobby.component';
+import { GameComponent } from './components/game/game.component';
+import { LoginComponent } from './components/login/login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LobbyComponent
+    LobbyComponent,
+    GameComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,

@@ -41,6 +41,21 @@ public class UserService implements IUserService{
         userDao.updateWinner(user.getId(), true);
     }
 
+    @Transactional
+    public void updateMongoId(User user, String mongoId) {
+        userDao.updateMongoId(user.getId(), mongoId);
+    }
+
+    @Transactional
+    public void updateCardId(User user, Long cardId) {
+        userDao.updateCardId(user.getId(), cardId);
+    }
+
+    @Transactional
+    public void updateGameId(User user, Long gameId) {
+        userDao.updateGameId(user.getId(), gameId);
+    }
+
     @Override
     @Transactional
     public void delete(User user) {
@@ -53,7 +68,13 @@ public class UserService implements IUserService{
     }
 
     @Transactional(readOnly = true)
+    public Optional<User> findUserByMongoId(String mongoId) {
+        return userDao.findByMongoId(mongoId);
+    }
+
+    @Transactional(readOnly = true)
     public Collection<User> findUserByGameId(Long gameID) {
         return userDao.findByGameId(gameID);
     }
+
 }

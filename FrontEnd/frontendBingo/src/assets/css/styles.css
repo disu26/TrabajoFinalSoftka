@@ -1,4 +1,5 @@
 /*Generales*/
+
 *{
   margin: 0px;
   padding: 0px;
@@ -7,11 +8,28 @@ body{
   font-family: "Courier New",Arial, Helvetica, sans-serif;
   font-size: 17px;
   background-attachment: fixed;
+
 }
 .clearfix{
   float: none;
   clear: both;
 }
+
+/*Barra de navegacion*/
+
+nav {
+  background: #2c3e50;
+  width: 100%;
+  height: 62px;
+}
+
+.logo{
+  font-size: 35px;
+  line-height: 53px;
+  width: 29%;
+  padding-left: 42%;
+}
+
 
 /*Contenido Principal*/
 #content{
@@ -20,6 +38,7 @@ body{
   margin:0px auto;
   box-shadow: 0px 0px  40px black;
   background: white;
+  padding-left: 50px;
   padding-top: 120px;
   padding-bottom: 18%;
 }
@@ -55,3 +74,99 @@ body{
   padding-bottom: 12px;
   background: lightgray;
 }
+/*Footer*/
+
+footer {
+  box-shadow: 0px 0px 1px black;
+  width: 100%;
+  height: 150px;
+  text-align: center;
+  margin: 0px auto;
+  background-color: white;
+  color: gray;
+}
+
+footer .container {
+  padding-top: 60px;
+}
+
+/*Temporizador*/
+
+.content {
+  background-color: black;
+  width: 35rem;
+  height: auto;
+  border-radius: 1.5rem;
+}
+
+.content-timer {
+  display: flex;
+  justify-content: center;
+  padding-top: 5rem;
+}
+
+.content-h,
+.content-m,
+.content-s {
+  width: 16rem;
+  height: 10rem;
+/* background-color: rgb(51, 12, 87); */
+}
+
+.time {
+  font-size: 130px;
+  text-align: center;
+  font-weight: 300;
+  color: white;
+}
+span {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color:  #F1136C ;
+}
+
+/*animation*/
+  .move {
+    animation: move_timer 1.3s infinite;
+  }
+
+@keyframes move_timer {
+
+  20%,
+  50%,
+  80% {
+    transform: translateY(0px);
+  }
+
+  30% {
+    transform: translateY(-45px);
+  }
+
+  60% {
+    transform: translateY(-25px);
+  }
+}
+
+#celdaPresionada:active{
+  color: red;
+}
+
+/*Login*/
+#botonIngresar {
+  padding-left: 29%;
+  padding-top: 3%;
+}
+
+#inputLogin {
+  width: 91%;
+  padding-left: 25%;
+}
+
+#divinputLogin {
+  width: 95%;
+}
+
+#cajaLogin {
+  padding-left: 19%;
+}
+
