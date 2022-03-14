@@ -60,8 +60,16 @@ export class GameComponent implements OnInit {
               console.log(response)
             }
           )
-          this.router.navigate(['lobby'])
+        }else {
+          Swal.fire({
+            position: 'center',
+            icon: 'error',
+            title: 'No has ganado, eliminado!!',
+            showConfirmButton: false,
+            timer: 2500
+          })
         }
+        this.router.navigate(['lobby'])
         console.log(response)
 
 

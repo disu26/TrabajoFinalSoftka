@@ -10,10 +10,7 @@ body{
   background-attachment: fixed;
 
 }
-.clearfix{
-  float: none;
-  clear: both;
-}
+
 
 /*Barra de navegacion*/
 
@@ -74,7 +71,16 @@ nav {
   padding-bottom: 12px;
   background: lightgray;
 }
+/*Mensajes error */
+
+.form_error {
+  padding: 3px;
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+}
 /*Footer*/
+
 
 footer {
   box-shadow: 0px 0px 1px black;
@@ -147,9 +153,6 @@ span {
   }
 }
 
-#celdaPresionada:active{
-  color: red;
-}
 
 /*Login*/
 #botonIngresar {
@@ -163,7 +166,7 @@ span {
 }
 
 #divinputLogin {
-  width: 95%;
+  width: 105%;
 }
 
 #cajaLogin {

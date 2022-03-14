@@ -63,6 +63,9 @@ export class LobbyComponent implements OnInit {
         timer: 2500
       })
       this.router.navigate(['/game']);
+      this._cardService.ponerJuegoProgreso().subscribe(
+
+      )
     }
 
     if (this.date.getHours() === 0 &&
@@ -154,7 +157,7 @@ export class LobbyComponent implements OnInit {
   listarUsuarios(){
     this._cardService.listarUsuarios().subscribe(
       response => {
-        console.log(this.listaUsuarios)
+
         this.listaUsuarios = response.data;
 
       },error => {

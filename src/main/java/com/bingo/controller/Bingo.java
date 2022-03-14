@@ -101,6 +101,10 @@ public class Bingo {
         }
     }
 
+    /**
+     * Método para saber si hay una partida iniciada.
+     * @return
+     */
     @GetMapping(path = "/game/started")
     public ResponseEntity<Response> started(){
         response = new Response();
@@ -114,6 +118,10 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método para saber si hay alguna partida en progreso.
+     * @return un objeto de tipo Response que en su campo response.data devuelve un boolean.
+     */
     @GetMapping(path = "/game/inProgress")
     public ResponseEntity<Response> inProgress(){
         response = new Response();
@@ -127,6 +135,10 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Metodo para saber en qué momento se inició una persona.
+     * @return un objeto de tipo Response que en su campo response.data devuelve un objeto de tipo Date.
+     */
     @GetMapping(path = "game/startTime")
     public ResponseEntity<Response> startTime(){
         response = new Response();
@@ -141,6 +153,11 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método para verificar si una persona es admin de una partida o no.
+     * @param user
+     * @return un objeto de tipo Response que en su campo response.data devuelve un boolean.
+     */
     @GetMapping(path = "game/userAdmin/{mongoId}")
     public ResponseEntity<Response> userAdmin(User user){
         response = new Response();
@@ -148,9 +165,9 @@ public class Bingo {
         if(us.isPresent()){
             var admin =  us.get();
             if(admin.isAdmin()){
-                response.data = "true";
+                response.data = true;
             }else {
-                response.data = "false";
+                response.data = false;
             }
 
         }else {
@@ -159,6 +176,10 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método para verificar las balotas que han salido
+     * @return una List con la informacion de las balotas que han salido.
+     */
     @GetMapping(path = "game/ballotsOut")
     public ResponseEntity<Response> ballotsOut(){
         response = new Response();
@@ -167,6 +188,11 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Metodo para determinar si una persona ganó o no.
+     * @param user
+     * @return
+     */
     @GetMapping(path = "game/isWinner/{mongoId}")
     public ResponseEntity<Response> isWinner(User user){
         response = new Response();
@@ -398,6 +424,10 @@ public class Bingo {
         }
     }
 
+    /**
+     * Método que genera una balota de manera aleatoria y la marca como que ya ha salido.
+     * @return
+     */
     @PutMapping(path = "ballot/out")
     public ResponseEntity<Response> ballotOut(){
         Random random = new Random();
@@ -414,6 +444,12 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método para marcar las balotas en las tarjetas, se verifica que esta ya haya salido.
+     * @param mongoId
+     * @param balId
+     * @return
+     */
     @PutMapping(path = "balcard/{mongoId}/{balId}")
     public ResponseEntity<Response> balCardMarked(@RequestBody @PathVariable("mongoId") String mongoId,
                                                   @RequestBody @PathVariable("balId") Long balId)
@@ -425,8 +461,14 @@ public class Bingo {
             var cB = cardBallotService.findByCardAndBallotId(userCard.getCardId(), balId);
             if (cB.isPresent()) {
                 var cardBallot = cB.get();
-                cardBallotService.updateMarked(cardBallot);
-                response.data = cardBallot;
+                var bal = ballotService.findBallotById(cardBallot.getBalId());
+                if(bal.isPresent()){
+                    var ballot = bal.get();
+                    if(ballot.isOut()){
+                        cardBallotService.updateMarked(cardBallot);
+                        response.data = cardBallot;
+                    }
+                }
             } else {
                 response.message = "Esa balota no se encuentra en esa tarjeta";
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
@@ -435,41 +477,11 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    public Ballot posibleBallot(Ballot ballot){
-        Random random = new Random();
-        if(ballot.isOut()){
-            int balOut = random.nextInt(74 + 1) + 1;
-            var bal = ballotService.findBallotById((long) balOut);
 
-            if (bal.isPresent()){
-                var posibleBalot = bal.get();
-                if(!posibleBalot.isOut()){
-                    return posibleBalot;
-                }else {
-                    posibleBallot(posibleBalot);
-                }
-            }
-        }
-        return ballot;
-    }
-
-    @PutMapping(path = "/game/winner/{mongoId}")
-    public ResponseEntity<Response> winner(User user){
-        response = new Response();
-        log.info(user.getMongoId());
-        var usu = userService.findUserByMongoId(user);
-        if (usu.isPresent()){
-            var usuario = usu.get();
-            userService.updateWinner(usuario);
-            response.data = usuario;
-        }else {
-            response.message = "Usuario no encontrado";
-            response.error = true;
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
+    /**
+     * Método para actualizar una partida y decir que está en progreso.
+     * @return
+     */
     @PutMapping(path = "/game/upInProgress")
     public ResponseEntity<Response> updateInProgress(){
         var gameStarted = gameService.findGameStarted();
@@ -483,6 +495,10 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método para terminar la partida.
+     * @return
+     */
     @PutMapping(path = "/game/finish")
     public ResponseEntity<Response> finish(){
         response = new Response();
@@ -502,8 +518,8 @@ public class Bingo {
     }
 
     /**
-     * Metodo para verificar si existe o no una partida en progreso.
-     * @return Objeto response que en su campo response.data lleva un boolean diciendo
+     * Metodo usado localmente para verificar si existe o no una partida en progreso.
+     * @return Objeto response que en su campo response.data lleva un boolean
      * que indica si hay o no una partida en progreso
      */
     public ResponseEntity<Response> gameInProgress(){
@@ -517,6 +533,11 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método usado localmente para saber si una partida fue iniciada.
+     * @return Objeto response que en su campo response.data lleva un boolean
+     * que indica si hay o no una partida en progreso
+     */
     public ResponseEntity<Response> gameStarted(){
         response = new Response();
         var gameStarted = gameService.findGameStarted();
@@ -528,6 +549,11 @@ public class Bingo {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Método usado localmente para generar la tarjeta de un usuario.
+     * @param cardId
+     * @param min
+     */
     private void generateCard(Long cardId, int min){
         /**
          * Los números son generados aleatoriamente.
@@ -579,6 +605,29 @@ public class Bingo {
                 cardBallotService.save(cardBallot);
             }
         }
+    }
+
+    /**
+     * Método recursivo para poder determinar si una balota es apta o no para salir.
+     * @param ballot
+     * @return
+     */
+    public Ballot posibleBallot(Ballot ballot){
+        Random random = new Random();
+        if(ballot.isOut()){
+            int balOut = random.nextInt(74 + 1) + 1;
+            var bal = ballotService.findBallotById((long) balOut);
+
+            if (bal.isPresent()){
+                var posibleBalot = bal.get();
+                if(!posibleBalot.isOut()){
+                    return posibleBalot;
+                }else {
+                    posibleBallot(posibleBalot);
+                }
+            }
+        }
+        return ballot;
     }
 
 }

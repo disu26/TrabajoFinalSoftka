@@ -108,4 +108,11 @@ export class BingoService {
     return this._http.put(this.url+"game/finish",{headers:headers});
   }
 
+  ponerJuegoProgreso(): Observable<any>{
+
+    let headers = new HttpHeaders().set('Content-Type','application/json');
+
+    return this._http.put(this.url+"game/upInProgress",{headers:headers});
+  }
+
 }
